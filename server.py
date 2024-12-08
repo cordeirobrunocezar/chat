@@ -33,7 +33,7 @@ rooms["default"] = Room([],[])
 
 def create_room(room_name):
     global rooms
-    if len(room_name) < 0:
+    if len(room_name) == 0:
         return False
     if room_name not in rooms:
         room = Room([], [])
@@ -121,12 +121,6 @@ def disconnect(username, room_name):
     users.remove(username)
     return True
 
-# to do -> manage empty rooms
-# def manage(r):
-#     for i in r:
-#         print("Sleeping thread")
-#         time.sleep(5)
-
 def main():
     logging.basicConfig(filename='server.log', level=logging.INFO)
     logger.info(f"{datetime.datetime.now()} Started at {main.__name__}")
@@ -148,14 +142,7 @@ def main():
             proxy.register_procedure("messenger", host, port)
     except Exception as e:
         logger.error(f"{datetime.datetime.now()} at {main.__name__}", exc_info=e)
-
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
-    #     # executor.submit(manage, list(rooms))
-    #     print(list(rooms))
-    #     result = executor.map(manage, list(rooms))
     
-    # for r in result:
-    #     print(r)
     try:
         server.serve_forever()
     except KeyboardInterrupt as e: 

@@ -1,12 +1,12 @@
 import time
 import xmlrpc.client
-from concurrent.futures import ThreadPoolExecutor
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
 from dataclasses import dataclass
 import datetime
 import logging
+import concurrent.futures
 
 logger = logging.getLogger(__name__)
 
@@ -256,11 +256,13 @@ def main():
     except Exception as e:
         logger.error(f"{datetime.datetime.now()} at {main.__name__}", exc_info=e)
         messagebox.showerror(message=e)
+        exit()
     app = App()
     logger.info(f"{datetime.datetime.now()} Ended at {main.__name__}")
 
 if __name__ == "__main__":
-    main()
+    with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor:
+        executor.submit(main)
 
 # https://docs.python.org/3/library/xmlrpc.server.html
 # https://docs.python.org/3/library/xmlrpc.server.html#xmlrpc.server.SimpleXMLRPCServer
