@@ -268,7 +268,8 @@ def main():
     logger.info(f"{datetime.datetime.now()} Ended at {main.__name__}")
 
 if __name__ == "__main__":
-    main()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future = executor.submit(main)
 
 # https://docs.python.org/3/library/xmlrpc.server.html
 # https://docs.python.org/3/library/xmlrpc.server.html#xmlrpc.server.SimpleXMLRPCServer

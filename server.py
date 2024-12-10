@@ -6,12 +6,14 @@ import time
 import datetime
 import logging
 import threading
+import concurrent.futures
 
 HOST = "localhost"
 PORT = 65432
 logger = logging.getLogger(__name__)
 messenger = None
 rooms = {}
+lock = threading.Lock()
 
 class Server(ThreadingMixIn, SimpleXMLRPCServer):
     pass
@@ -19,7 +21,7 @@ class Server(ThreadingMixIn, SimpleXMLRPCServer):
 class Messenger():
     def __init__(self):
         global rooms
-        self.default_room = Room("default", ["everyone"], [], Timer())
+        self.default_room = Room("default", ["everyone"], [], 0)
         rooms = {f"{self.default_room.name}":self.default_room}
         self.users = []
 
@@ -27,7 +29,7 @@ class Messenger():
         if len(room_name) == 0:
             return False
         if room_name not in rooms:
-            room = Room(room_name, [], [], Timer())
+            room = Room(room_name, ["everyone"], [], 0)
             rooms[room_name] = room
             return True
         return False
@@ -105,40 +107,12 @@ class Messenger():
         self.users.remove(username)
         return True
 
-class TimerError(Exception):
-    pass
-
-class Timer:
-    def __init__(self):
-        self._start_time = None
-        self.buf = 0
-    
-    def start(self):
-        if self._start_time is not None:
-            raise TimerError(f"already running\n")
-        self._start_time = time.monotonic_ns()
-
-    def stop(self):
-        if self._start_time is None:
-            raise TimerError(f"not started")
-        self.buf = 0
-        elapsed_time = time.monotonic_ns() - self._start_time
-        self._start_time = None
-        return elapsed_time
-
-    def pause(self):
-        if self._start_time is None:
-            raise TimerError(f"not started (pause)")
-        elapsed_time = time.monotonic_ns() - self._start_time
-        self.buf += elapsed_time
-        return self.buf
-
 @dataclass
 class Room:
     name: str
     users: list
     messages: list
-    timer: Timer
+    timer: int
 
 @dataclass
 class Message:
@@ -157,26 +131,37 @@ class RoomManager(threading.Thread):
     def run(self):
         while True:
             r = list(rooms)
-            for room_name in r:
-                if room_name != "default":
-                    room = rooms[room_name]
-                    self.manage_room(room)
-            time.sleep(2)
+            print(rooms)
+            room_key = r.pop()
+            self.manage_room(room_key)
+            time.sleep(5)
     
-    def manage_room(self, room: Room) -> None:
-        q = len(room.users)
-        t = room.timer._start_time
-        if t:
-            total = room.timer.pause() * 1e-9
-            if total > 300 and q == 0:
-                room.timer.stop()
-                rooms.pop(room.name)
-        if not t and q == 0:
-            room.timer.start()
-        if t and q > 0:
-            room.timer.stop()
+    def manage_room(self, room_key: str) -> None:
+        if room_key == "default":
+            return
+
+        with lock:
+            room = rooms[room_key]
+            q = len(room.users)
+            t = room.timer
+
+            logger.info(f"{datetime.datetime.now()} unlocked {room.name}")
+
+            if q == 1:
+                if t > 300:
+                    rooms.pop(room_key)
+                    logger.info(f"{datetime.datetime.now()} {room.name} popped")
+                    return
+                room.timer += 5
+                logger.info(f"{datetime.datetime.now()} {room.name} timer is {t}")
+            elif t > 0:
+                room.timer = 0
+                logger.info(f"{datetime.datetime.now()} someone entered {room.name}")
+
+            logger.info(f"{datetime.datetime.now()} managed {room.name}")
 
 def task():
+    logger.info(f"{datetime.datetime.now()} at task call, starting messenger...")
     messenger = Messenger()
     with Server((HOST, PORT)) as server:
         server.register_introspection_functions()
@@ -196,12 +181,19 @@ def main():
         except Exception as e:
             logger.error(f"{datetime.datetime.now()} at {main.__name__}", exc_info=e)
         s = threading.Thread(target=task)
-        s.start()
         room_manager = RoomManager()
-        room_manager.start()
-        s.join()
+        s.start()
+        # room_manager.start()
+        while(True):
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                try:
+                    future = executor.map(room_manager.manage_room, list(rooms))
+                except Exception as e:
+                    logger.error(f"{datetime.datetime.now()} at future", exc_info=e)
+                time.sleep(5)
     except KeyboardInterrupt as e:
         logger.error(f"{datetime.datetime.now()} at {main.__name__}", exc_info=e)
+    s.join()
     logger.info(f"{datetime.datetime.now()} Ended at {main.__name__}")
 
 if __name__ == "__main__":
