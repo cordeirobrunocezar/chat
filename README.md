@@ -11,7 +11,7 @@
 
 # Server
     - register_procedure / register service name to Binder
-    - register_instance / service instance
+    - register_instance / register service instance to Server
 
 # Client
     - class App -> GUI
