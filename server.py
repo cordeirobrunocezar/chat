@@ -166,7 +166,7 @@ def task():
     with Server((HOST, PORT)) as server:
         server.register_introspection_functions()
         server.register_instance(messenger)
-        #
+        # equals to
         # server.register_function(messenger.create_room)
         # server.register_function(messenger.join_room)
         # server.register_function(messenger.send_message)
