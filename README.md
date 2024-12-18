@@ -1,29 +1,18 @@
 # Run
 
-python3 binder.py
-python3 server.py
-python3 client.py
-
-    input username then log in
-    join default room by default
+    python3 binder.py
+    python3 server.py
+    python3 client.py
 
 # Binder 
-    ## register_function 
-        ### register_procedure
-        ### lookup_procedure
+    - register_function 
+    - register_procedure
+    - lookup_procedure
 
 # Server
-    ## register_instance(messenger)
-        -> class methods
-    
-    ## HOST, PORT (Binder)
-    ### register_procedure("messenger", HOST, PORT) -> Binder
-        -> service name
-
-    ## register_instance()
-        -> service instance
-            -> instance methods
+    - register_procedure / register service name to Binder
+    - register_instance / service instance
 
 # Client
-    ## class App -> GUI
-    ## class Handler -> RPC calls
+    - class App -> GUI
+    - class Handler -> RPC call handler
