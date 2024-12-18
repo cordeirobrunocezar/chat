@@ -23,7 +23,7 @@ class Messenger():
         global rooms
         self.default_room = Room("default", ["everyone"], [], 0)
         rooms = {f"{self.default_room.name}":self.default_room}
-        self.users = []
+        self.users = ["everyone"]
 
     def create_room(self, room_name):
         if len(room_name) == 0:
@@ -166,6 +166,17 @@ def task():
     with Server((HOST, PORT)) as server:
         server.register_introspection_functions()
         server.register_instance(messenger)
+        #
+        # server.register_function(messenger.create_room)
+        # server.register_function(messenger.join_room)
+        # server.register_function(messenger.send_message)
+        # server.register_function(messenger.receive_messages)
+        # server.register_function(messenger.list_rooms)
+        # server.register_function(messenger.list_users)
+        # server.register_function(messenger.register_user)
+        # server.register_function(messenger.disconnect)
+        # server.register_function(messenger.leave_room)
+        #
         try:
             server.serve_forever()
         except Exception as e:
