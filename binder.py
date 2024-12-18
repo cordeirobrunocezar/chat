@@ -28,10 +28,13 @@ def main():
                 server.serve_forever()
             except KeyboardInterrupt as e: 
                 logger.error(f"{datetime.datetime.now()} at {main.__name__} serve_forever call", exc_info=e)
+                exit()
             except Exception as e:
                 logger.error(f"{datetime.datetime.now()} at {main.__name__} serve_forever call", exc_info=e)
+                exit()
     except Exception as e:
         logger.error(f"{datetime.datetime.now()} at {main.__name__} server", exc_info=e)
+        exit()
     logger.info(f"{datetime.datetime.now()} Ended at {main.__name__}")
 
 if __name__ == "__main__":
