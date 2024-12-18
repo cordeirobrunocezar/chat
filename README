@@ -1,1 +1,23 @@
-chat
+Run
+
+python3 binder.py
+python3 server.py
+python3 client.py
+
+    input username then log in
+    join default room by default
+
+Binder register_function 
+    register_procedure
+    lookup_procedure
+
+Server
+    register_instance(messenger)
+        -> class methods
+    
+    register_procedure("messenger", HOST, PORT) -> Binder
+        -> service name
+
+Client
+    class App -> GUI
+    class Handler -> RPC calls

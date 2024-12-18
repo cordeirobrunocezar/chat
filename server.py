@@ -172,6 +172,7 @@ def task():
             logger.error(f"{datetime.datetime.now()} at serve_forever call", exc_info=e)
         except KeyboardInterrupt as e:
             logger.error(f"{datetime.datetime.now()} at {main.__name__}", exc_info=e)
+            exit()
 
 def main():
     logging.basicConfig(filename='server.log', level=logging.INFO)
@@ -182,6 +183,7 @@ def main():
                 proxy.register_procedure("messenger", HOST, PORT)
         except Exception as e:
             logger.error(f"{datetime.datetime.now()} at {main.__name__}", exc_info=e)
+            exit()
         s = threading.Thread(target=task, daemon=True)
         room_manager = RoomManager()
         s.start()
@@ -190,11 +192,13 @@ def main():
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                 try:
                     future = executor.map(room_manager.manage_room, list(rooms))
+                    time.sleep(5)
                 except Exception as e:
                     logger.error(f"{datetime.datetime.now()} at future", exc_info=e)
-                time.sleep(5)
+                    exit()
     except KeyboardInterrupt as e:
         logger.error(f"{datetime.datetime.now()} at {main.__name__}", exc_info=e)
+        exit()
     logger.info(f"{datetime.datetime.now()} Ended at {main.__name__}")
 
 if __name__ == "__main__":
