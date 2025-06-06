@@ -1,3 +1,5 @@
+Class work for distributed systems at Universidade do Estado do Rio de Janeiro.
+
 # Run
     python3 binder.py
     python3 server.py
